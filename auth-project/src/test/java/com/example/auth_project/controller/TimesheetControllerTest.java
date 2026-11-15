@@ -154,7 +154,11 @@ class TimesheetControllerTest {
         mockMvc.perform(put("/timesheet/checker/edit/1")
                         .principal(auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                        {
+                            "checkerStatus": "APPROVED"
+                        }
+                    """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Timesheet updated successfully."));
 
@@ -169,7 +173,11 @@ class TimesheetControllerTest {
         mockMvc.perform(put("/timesheet/checker/edit/1")
                         .principal(auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                        {
+                            "checkerStatus": "APPROVED"
+                        }
+                    """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Timesheet is already approved."));
     }
@@ -184,7 +192,15 @@ class TimesheetControllerTest {
         mockMvc.perform(put("/timesheet/maker/edit/1")
                         .principal(auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                        {
+                            "name": "Budi Santoso",
+                            "leadId": 1,
+                            "location": "Jakarta",
+                            "remarks": "Updated timesheet",
+                            "checkerId": 2
+                        }
+                        """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Timesheet updated successfully."));
 
@@ -199,7 +215,15 @@ class TimesheetControllerTest {
         mockMvc.perform(put("/timesheet/maker/edit/1")
                         .principal(auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("""
+                        {
+                            "name": "Budi Santoso",
+                            "leadId": 1,
+                            "location": "Jakarta",
+                            "remarks": "Updated timesheet",
+                            "checkerId": 2
+                        }
+                        """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Timesheet not found."));
     }
