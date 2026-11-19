@@ -35,7 +35,7 @@ public class Employee {
     @JsonIgnore
     private Employee manager;
 
-    @NotNull
+    //@NotNull
     @Column(name = "employee_phone")
     private String empPhone;
 

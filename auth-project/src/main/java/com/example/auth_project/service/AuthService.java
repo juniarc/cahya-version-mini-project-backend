@@ -71,6 +71,9 @@ public class AuthService {
         // Automatically create new employee
         Employee employee = new Employee();
         employee.setUser(user);
+        employee.setEmpName(user.getName());
+
+        employee.setEmpEmail(user.getEmail());
         employee.setCreated_at(new Date());
         employee.setUpdated_at(new Date());
         employeeRepository.save(employee);
