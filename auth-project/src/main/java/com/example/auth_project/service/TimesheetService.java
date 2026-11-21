@@ -1,7 +1,9 @@
 package com.example.auth_project.service;
 
+import com.example.auth_project.messaging.TimesheetEventPublisher;
 import com.example.auth_project.model.entity.Employee;
 import com.example.auth_project.model.entity.Timesheet;
+import com.example.auth_project.model.event.TimesheetSubmittedEvent;
 import com.example.auth_project.model.request.CreateTimesheetRequest;
 import com.example.auth_project.model.request.UpdateTimesheetByMakerRequest;
 import com.example.auth_project.model.request.UpdateTimesheetRequest;
@@ -10,6 +12,8 @@ import com.example.auth_project.model.response.TimesheetResponse;
 import com.example.auth_project.repository.EmployeeRepository;
 import com.example.auth_project.repository.TimesheetRepository;
 import com.example.auth_project.utils.mapper.Mapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class TimesheetService {
 
@@ -27,6 +32,9 @@ public class TimesheetService {
 
     @Autowired
     private EmployeeRepository employeeRepo;
+
+    @Autowired
+    private TimesheetEventPublisher timesheetEventPublisher;
 
     public Timesheet createTimesheet(String username, CreateTimesheetRequest request){
         Employee maker = employeeRepo.findByUserUsername(username)
@@ -50,10 +58,18 @@ public class TimesheetService {
         timesheet.setCreated_at(new Date());
         timesheet.setUpdated_at(new Date());
 
-        timesheetRepo.save(timesheet);
+        Timesheet saved = timesheetRepo.save(timesheet);
+
+        try{
+            timesheetEventPublisher.publishSubmitted(
+                    new TimesheetSubmittedEvent(saved.getId(), saved.getMaker().getEmpId())
+            );
+        } catch (AmqpException e){
+            log.error("Failed sending event to timesheet {}", saved.getId(), e);
+        }
 
 
-        return timesheet;
+        return saved;
     }
 
     public Timesheet editTimeSheetByChecker(String username, UpdateTimesheetRequest request, Long timesheetId){
